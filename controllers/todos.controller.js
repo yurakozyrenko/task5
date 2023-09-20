@@ -1,10 +1,12 @@
 const ToDo = require('../models/todo');
+const ToDosService = require('../services/todos.service');
+
 const { validationResult } = require('express-validator');
 
 class ToDosControllers {
     async getToDos(req, res) {
         try {
-            const toDos = await ToDo.find({ idUser: req.user.id });
+            const toDos = await ToDosService.getAllToDos(req.user);
             return res.status(200).send(toDos);
         } catch (error) {
             return res.status(500).send(error.message);
@@ -21,9 +23,7 @@ class ToDosControllers {
             req.body.isCompleted = false;
             req.body.idUser = req.user.id;
 
-            const newToDo = new ToDo(req.body);
-            newToDo.save();
-
+            const newToDo = await ToDosService.createToDo(req.body);
             return res.status(200).send(newToDo);
         } catch (error) {
             return res.status(500).send(error.message);
@@ -36,10 +36,10 @@ class ToDosControllers {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            const updateToDo = await ToDo.findByIdAndUpdate(
-                { _id: req.params.id, idUser: req.user.id },
-                { $set: { title: req.body.title } },
-                { returnDocument: 'after' }
+            const updateToDo = await ToDosService.updateToDoTitle(
+                req.body,
+                req.params.id,
+                req.user
             );
 
             if (!updateToDo) {
@@ -58,10 +58,10 @@ class ToDosControllers {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            const result = await ToDo.findByIdAndDelete({
-                _id: req.params.id,
-                idUser: req.user.id,
-            });
+            const result = await ToDosService.deleteToDo(
+                req.params.id,
+                req.user
+            );
 
             if (!result) {
                 return res.send(false);
@@ -79,21 +79,18 @@ class ToDosControllers {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const findToDo = await ToDo.findById({
-                _id: req.params.id,
-                idUser: req.user.id,
-            });
+            const findToDo = await ToDosService.getOneToDo(
+                req.params.id,
+                req.user
+            );
 
             if (findToDo) {
                 const newValue = !findToDo.isCompleted;
 
-                const updateToDo = await ToDo.findByIdAndUpdate(
-                    {
-                        _id: req.params.id,
-                        idUser: req.user.id,
-                    },
-                    { $set: { isCompleted: newValue } },
-                    { returnDocument: 'after' }
+                const updateToDo = await ToDosService.updateToDoStatus(
+                    newValue,
+                    req.params.id,
+                    req.user
                 );
 
                 return res.status(200).send(updateToDo);
