@@ -1,6 +1,5 @@
 const { validationResult } = require('express-validator');
-const User = require('../models/users');
-
+const UsersService = require('../services/users.service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const saltRounds = 10;
@@ -13,21 +12,18 @@ class UserControllers {
                 return res.status(400).json({ errors: errors.array() });
             }
             const { email, password } = req.body;
-
-            const users = await User.find({ email: email });
-            if (users.length !== 0) {
+            const user = await UsersService.getUser({ email: email });
+            if (user) {
                 throw new Error('Логин уже используется');
             }
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-            const user = {
+            const newUser = {
                 email,
                 password: hashedPassword,
             };
 
-            const newUser = new User(user);
-            newUser.save();
-
-            return res.status(200).send(newUser);
+            const createdUser = await UsersService.createUser(newUser);
+            return res.status(200).send(createdUser);
         } catch (error) {
             return res.status(500).send(error.message);
         }
@@ -41,8 +37,7 @@ class UserControllers {
             }
             const { email, password } = req.body;
 
-            const findUser = await User.findOne({ email: email });
-
+            const findUser = await UsersService.getUser({ email: email });
             if (!findUser) {
                 throw new Error('Пользователь не зарегистрирован');
             }
