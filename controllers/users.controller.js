@@ -17,12 +17,10 @@ class UserControllers {
                 throw new Error('Логин уже используется');
             }
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-            const newUser = {
+            const createdUser = await UsersService.createUser({
                 email,
                 password: hashedPassword,
-            };
-
-            const createdUser = await UsersService.createUser(newUser);
+            });
             return res.status(200).send(createdUser);
         } catch (error) {
             return res.status(500).send(error.message);
@@ -50,7 +48,7 @@ class UserControllers {
                 throw new Error('invalid password');
             }
             const token = jwt.sign(
-                { id: findUser._id },
+                { idUser: findUser._id },
                 process.env.ACCESS_TOKEN_SECRET
             );
 
