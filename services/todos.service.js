@@ -1,15 +1,13 @@
 const ToDo = require('../models/todo');
 
-
-
 class ToDosService {
-    async getAllToDos(user) {
-        const toDos = await ToDo.find({idUser: user.id});
+    async getAllToDos(idUser) {
+        const toDos = await ToDo.find({ idUser: idUser }).exec();
         return toDos;
     }
 
-    async getOneToDo(id,user){
-        const toDo = await ToDo.findById({_id: id, idUser: user.id});
+    async getOneToDo(id, idUser) {
+        const toDo = await ToDo.findById({ _id: id, idUser: idUser });
         return toDo;
     }
 
@@ -19,26 +17,26 @@ class ToDosService {
         return newToDo;
     }
 
-    async updateToDoTitle(newTitle, id, user) {
+    async updateToDoTitle(newTitle, id, idUser) {
         const updateToDo = await ToDo.findOneAndUpdate(
-            { _id: id, idUser: user.id },
-            { $set: { title: newTitle.title } },
+            { _id: id, idUser: idUser },
+            { $set: { title: newTitle } },
             { returnDocument: 'after' }
         );
         return updateToDo;
     }
 
-    async deleteToDo(id, user) {
+    async deleteToDo(id, idUser) {
         const updateToDo = await ToDo.findByIdAndDelete({
             _id: id,
-            idUser: user.id,
+            idUser: idUser,
         });
         return updateToDo;
     }
 
-    async updateToDoStatus(newStatus, id, user) {
+    async updateToDoStatus(newStatus, id, idUser) {
         const updateToDo = await ToDo.findOneAndUpdate(
-            { _id: id, idUser: user.id },
+            { _id: id, idUser: idUser },
             { $set: { isCompleted: newStatus } },
             { returnDocument: 'after' }
         );
