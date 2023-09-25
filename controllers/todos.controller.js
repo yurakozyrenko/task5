@@ -1,4 +1,3 @@
-const ToDo = require('../models/todo');
 const ToDosService = require('../services/todos.service');
 
 const { validationResult } = require('express-validator');
@@ -6,7 +5,8 @@ const { validationResult } = require('express-validator');
 class ToDosControllers {
     async getToDos(req, res) {
         try {
-            const toDos = await ToDosService.getAllToDos(req.user);
+            const { idUser } = req.user;
+            const toDos = await ToDosService.getAllToDos(idUser);
             return res.status(200).send(toDos);
         } catch (error) {
             return res.status(500).send(error.message);
@@ -20,10 +20,15 @@ class ToDosControllers {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            req.body.isCompleted = false;
-            req.body.idUser = req.user.id;
+            const { idUser } = req.user;
+            const { title, isCompleted } = req.body;
 
-            const newToDo = await ToDosService.createToDo(req.body);
+            const newToDo = await ToDosService.createToDo({
+                idUser,
+                title,
+                isCompleted,
+            });
+            console.log(newToDo.email);
             return res.status(200).send(newToDo);
         } catch (error) {
             return res.status(500).send(error.message);
@@ -36,10 +41,14 @@ class ToDosControllers {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
+            const { idUser } = req.user;
+            const { title } = req.body;
+            const { id } = req.params;
+
             const updateToDo = await ToDosService.updateToDoTitle(
-                req.body,
-                req.params.id,
-                req.user
+                title,
+                id,
+                idUser
             );
 
             if (!updateToDo) {
@@ -58,10 +67,10 @@ class ToDosControllers {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            const result = await ToDosService.deleteToDo(
-                req.params.id,
-                req.user
-            );
+
+            const { idUser } = req.user;
+            const { id } = req.params;
+            const result = await ToDosService.deleteToDo(id, idUser);
 
             if (!result) {
                 return res.send(false);
@@ -79,18 +88,18 @@ class ToDosControllers {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const findToDo = await ToDosService.getOneToDo(
-                req.params.id,
-                req.user
-            );
+            const { idUser } = req.user;
+            const { id } = req.params;
+
+            const findToDo = await ToDosService.getOneToDo(id, idUser);
 
             if (findToDo) {
                 const newValue = !findToDo.isCompleted;
 
                 const updateToDo = await ToDosService.updateToDoStatus(
                     newValue,
-                    req.params.id,
-                    req.user
+                    id,
+                    idUser
                 );
 
                 return res.status(200).send(updateToDo);
