@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const Schema = mongoose.Schema;
 
 const toDoSchema = new Schema({
@@ -9,12 +8,15 @@ const toDoSchema = new Schema({
     },
     isCompleted: {
         type: Boolean,
+        default: false,
     },
+
     idUser: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
     },
 });
 
-const ToDo = mongoose.model('ToDo', toDoSchema);
+const ToDo = mongoose.model('todos', toDoSchema);
 
 module.exports = ToDo;
