@@ -2,18 +2,18 @@ const ToDo = require('../models/todo');
 
 class ToDosService {
     async getAllToDos(idUser) {
-        const toDos = await ToDo.find({ idUser: idUser }).exec();
+        const toDos = await ToDo.find({ idUser: idUser }).populate('idUser');
         return toDos;
     }
 
     async getOneToDo(id, idUser) {
-        const toDo = await ToDo.findById({ _id: id, idUser: idUser });
+        const toDo = await ToDo.findById({ _id: id, idUser: idUser }).populate('idUser');
         return toDo;
     }
 
     async createToDo(todo) {
         const newToDo = new ToDo(todo);
-        newToDo.save();
+        await newToDo.save();
         return newToDo;
     }
 
@@ -22,7 +22,7 @@ class ToDosService {
             { _id: id, idUser: idUser },
             { $set: { title: newTitle } },
             { returnDocument: 'after' }
-        );
+        ).populate('idUser');
         return updateToDo;
     }
 
@@ -39,7 +39,7 @@ class ToDosService {
             { _id: id, idUser: idUser },
             { $set: { isCompleted: newStatus } },
             { returnDocument: 'after' }
-        );
+        ).populate('idUser');
         return updateToDo;
     }
 }
