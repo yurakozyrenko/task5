@@ -1,5 +1,4 @@
 const ToDosService = require('../services/todos.service');
-
 const { validationResult } = require('express-validator');
 
 class ToDosControllers {
@@ -28,7 +27,6 @@ class ToDosControllers {
                 title,
                 isCompleted,
             });
-            console.log(newToDo.email);
             return res.status(200).send(newToDo);
         } catch (error) {
             return res.status(500).send(error.message);
